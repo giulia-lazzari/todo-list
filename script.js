@@ -1,85 +1,110 @@
-const input = document.getElementById("todo-input");
-const addBtn = document.getElementById("add-btn");
-const list = document.getElementById("todo-list");
+let inputTesto = document.getElementById("todo-input");
+let bottoneAggiungi = document.getElementById("add-btn");
+let lista = document.getElementById("todo-list");
 
-let todos = JSON.parse(localStorage.getItem("todos")) || [];
+let listaAttivita = JSON.parse(localStorage.getItem("attivita")) || [];
 
-// Render
-function renderTodos() {
-  list.innerHTML = "";
+// Mostra lista
+function mostraLista() {
+  lista.innerHTML = "";
 
-  if (todos.length === 0) {
-    list.innerHTML = `<p class="empty">Nessun task ancora</p>`;
+  if (listaAttivita.length === 0) {
+    lista.innerHTML = "<p class='empty'>Nessuna attività</p>";
     return;
   }
 
-  todos.forEach((todo) => {
-    const li = document.createElement("li");
+  listaAttivita.forEach(function(attivita) {
+    let elemento = document.createElement("li");
 
-    li.innerHTML = `
-      <span class="${todo.completed ? "completed" : ""}">
-        ${todo.text}
-      </span>
-      <div>
-        <button onclick="toggleTodo(${todo.id})">✔</button>
-        <button onclick="deleteTodo(${todo.id})">❌</button>
-      </div>
-    `;
+    let testo = document.createElement("span");
+    testo.textContent = attivita.testo;
 
-    list.appendChild(li);
+    if (attivita.fatta) {
+      testo.classList.add("completed");
+    }
+
+    let contenitore = document.createElement("div");
+
+    let bottoneFatto = document.createElement("button");
+    bottoneFatto.textContent = "✔";
+    bottoneFatto.addEventListener("click", function() {
+      cambiaStato(attivita.id);
+    });
+
+    let bottoneCancella = document.createElement("button");
+    bottoneCancella.textContent = "❌";
+    bottoneCancella.addEventListener("click", function() {
+      elimina(attivita.id);
+    });
+
+    contenitore.appendChild(bottoneFatto);
+    contenitore.appendChild(bottoneCancella);
+
+    elemento.appendChild(testo);
+    elemento.appendChild(contenitore);
+
+    lista.appendChild(elemento);
   });
 
-  saveTodos();
+  salva();
 }
 
-// Aggiungi task
-function addTodo() {
-  const text = input.value.trim();
+// Aggiungi attività
+function aggiungi() {
+  let testo = inputTesto.value.trim();
 
-  if (text === "") return;
+  if (testo === "") return;
 
-  const newTodo = {
+  let nuova = {
     id: Date.now(),
-    text,
-    completed: false
+    testo: testo,
+    fatta: false
   };
 
-  todos.push(newTodo);
-  input.value = "";
+  listaAttivita.push(nuova);
+  inputTesto.value = "";
 
-  renderTodos();
+  mostraLista();
 }
 
 // Eventi
-addBtn.addEventListener("click", addTodo);
+bottoneAggiungi.addEventListener("click", aggiungi);
 
-input.addEventListener("keypress", (e) => {
+inputTesto.addEventListener("keypress", function(e) {
   if (e.key === "Enter") {
-    addTodo();
+    aggiungi();
   }
 });
 
-// Toggle completato
-function toggleTodo(id) {
-  todos = todos.map(todo =>
-    todo.id === id
-      ? { ...todo, completed: !todo.completed }
-      : todo
-  );
+// Cambia stato
+function cambiaStato(id) {
+  listaAttivita = listaAttivita.map(function(el) {
+    if (el.id === id) {
+      return {
+        id: el.id,
+        testo: el.testo,
+        fatta: !el.fatta
+      };
+    }
+    return el;
+  });
 
-  renderTodos();
+  mostraLista();
 }
 
 // Elimina
-function deleteTodo(id) {
-  todos = todos.filter(todo => todo.id !== id);
-  renderTodos();
+function elimina(id) {
+  listaAttivita = listaAttivita.filter(function(el) {
+    return el.id !== id;
+  });
+
+  mostraLista();
 }
 
 // Salva
-function saveTodos() {
-  localStorage.setItem("todos", JSON.stringify(todos));
+function salva() {
+  localStorage.setItem("attivita", JSON.stringify(listaAttivita));
 }
 
-// Init
-renderTodos();
+// Avvio
+mostraLista();
